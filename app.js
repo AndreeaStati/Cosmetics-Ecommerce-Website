@@ -1,6 +1,7 @@
 const express = require('express');
 const expressLayouts = require('express-ejs-layouts');
 const bodyParser = require('body-parser')
+const fs = require('fs/promises');
 
 const app = express();
 
@@ -26,82 +27,44 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.get('/', (req, res) => res.send('Hello World'));
 
 // la accesarea din browser adresei http://localhost:6789/chestionar se va apela funcția specificată
-app.get('/chestionar', (req, res) => {
-    const listaIntrebari = [
-        {
-            intrebare: 'Ce tip de ten are nevoie de produse non-comedogenice?',
-            variante: ['Ten uscat', 'Ten normal', 'Ten gras', 'Ten sensibil'],
-            corect: 2
-        },
-        {
-            intrebare: 'Care ingredient este cunoscut pentru reducerea acneei?',
-            variante: ['Acid hialuronic', 'Retinol', 'Ulei de cocos', 'Lanolină'],
-            corect: 1
-        },
-        {
-            intrebare: 'Ce produs se aplică primul în rutina de îngrijire?',
-            variante: ['Cremă hidratantă', 'Serum', 'Toner', 'Curățare facială'],
-            corect: 3
-        },
-        {
-            intrebare: 'Ce SPF este recomandat pentru utilizare zilnică?',
-            variante: ['SPF 10', 'SPF 15', 'SPF 30', 'SPF 50+'],
-            corect: 3
-        },
-        {
-            intrebare: 'Ce rol are acidul hialuronic în produse cosmetice?',
-            variante: ['Exfoliere', 'Hidratare', 'Protecție solară', 'Colorare'],
-            corect: 1
-        },
-        {
-            intrebare: 'Ce înseamnă termenul “hipoalergenic”?',
-            variante: ['Produs testat pe animale', 'Produs fără alcool', 'Produs ce reduce riscul de alergii', 'Produs natural'],
-            corect: 2
-        },
-        {
-            intrebare: 'Ce tip de produs este BB Cream?',
-            variante: ['Fond de ten cu acoperire mare', 'Balsam pentru buze', 'Cremă cu beneficii multiple', 'Bază de machiaj'],
-            corect: 2
-        },
-        {
-            intrebare: 'Ce ingredient este recomandat pentru estomparea petelor pigmentare?',
-            variante: ['Vitamina C', 'Colagen', 'Lanolină', 'Glicerină'],
-            corect: 0
-        },
-        {
-            intrebare: 'Cât de des ar trebui folosit un exfoliant chimic?',
-            variante: ['Zilnic', 'O dată pe lună', 'De 2-3 ori pe săptămână', 'Niciodată'],
-            corect: 2
-        },
-        {
-            intrebare: 'Ce este “clean beauty”?',
-            variante: ['Machiaj rezistent la apă', 'Produse testate clinic', 'Produse fără ingrediente controversate', 'Produse ieftine'],
-            corect: 2
-        }
-    ];
-
-    res.render('chestionar', { intrebari: listaIntrebari });
+app.get('/chestionar', async (req, res) => {
+    try {
+        const data = await fs.readFile('intrebari.json', 'utf-8');
+        const listaIntrebari = JSON.parse(data);
+        res.render('chestionar', { intrebari: listaIntrebari });
+    } catch (error) {
+        console.error('Eroare la citirea fișierului JSON:', error);
+        res.status(500).send('Eroare la încărcarea chestionarului.');
+    }
 });
 
 
-app.post('/rezultat-chestionar', (req, res) => {
-    const raspunsuriCorecte = [2, 1, 3, 3, 1, 2, 2, 0, 2, 2]; // corespunde celor 10 întrebări
-    const raspunsuriUser = req.body;
+app.post('/rezultat-chestionar', async (req, res) => {
+    try {
+        const data = await fs.readFile('intrebari.json', 'utf-8');
+        const listaIntrebari = JSON.parse(data);
+        const raspunsuriUser = req.body;
 
-    let punctaj = 0;
+        let punctaj = 0;
 
-    raspunsuriCorecte.forEach((corect, index) => {
-        const raspunsUser = parseInt(raspunsuriUser[`intrebare${index}`]);
-        if (raspunsUser === corect) {
-            punctaj++;
-        }
-    });
+        listaIntrebari.forEach((intrebare, index) => {
+            const raspunsCorect = intrebare.corect;
+            const raspunsUser = parseInt(raspunsuriUser[`intrebare${index}`]);
+            if (raspunsUser === raspunsCorect) {
+                punctaj++;
+            }
+        });
 
-    res.render('rezultat-chestionar', {
-        total: raspunsuriCorecte.length,
-        corecte: punctaj
-    });
+        res.render('rezultat-chestionar', {
+            total: listaIntrebari.length,
+            corecte: punctaj
+        });
+    } catch (error) {
+        console.error('Eroare la evaluarea răspunsurilor:', error);
+        res.status(500).send('Eroare la procesarea răspunsurilor.');
+    }
 });
+
 
 
 app.listen(port, () => console.log(`Serverul rulează la adresa http://localhost:
