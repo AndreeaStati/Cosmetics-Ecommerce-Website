@@ -1,5 +1,6 @@
 <a href="/autentificare">Autentificare</a>
 
 <% if (utilizator) { %>
-    <p>Bine ai venit, <%= utilizator %>!</p>
+    <p>Bine ai venit, <%= utilizator.nume %> <%= utilizator.prenume %>!</p>
 <% } %>
+

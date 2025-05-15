@@ -45,3 +45,12 @@ button {
 button:hover {
     background-color: #0056b3;
 }
+
+
+#leftHeader {
+    display: flex;
+    flex-direction: row;
+    gap:20px;
+    justify-content: flex-end;
+    text-align: left;
+}

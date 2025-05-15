@@ -1,11 +1,25 @@
+const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const express = require('express');
 const expressLayouts = require('express-ejs-layouts');
-const bodyParser = require('body-parser')
+const bodyParser = require('body-parser');
 const fs = require('fs/promises');
 
-const app = express();
+const app = express(); // <-- aceasta trebuie să fie aici sus, înainte de orice "app.use()"
+
 app.use(cookieParser());
+app.use(session({
+    secret: 'secretSession',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {} 
+}));
+
+app.use((req, res, next) => {
+    res.locals.utilizator = req.session.utilizator;
+    next();
+});
+
 
 const port = 6789;
 // directorul 'views' va conține fișierele .ejs (html + js executat la server)
@@ -27,8 +41,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // proprietățile obiectului Request - req - https://expressjs.com/en/api.html#req
 // proprietățile obiectului Response - res - https://expressjs.com/en/api.html#res
 app.get('/', (req, res) => {
-    const utilizator = req.cookies.utilizator;
-    res.render('index', { utilizator });
+    const utilizator = req.session.utilizator;
+    res.render('index');
 });
 
 // la accesarea din browser adresei http://localhost:6789/chestionar se va apela funcția specificată
@@ -71,25 +85,47 @@ app.post('/rezultat-chestionar', async (req, res) => {
 });
 
 app.get('/autentificare', (req, res) => {
-    const mesajEroare = req.cookies.mesajEroare;
-    res.clearCookie('mesajEroare');
+    const mesajEroare = req.session.mesajEroare;
+    req.session.mesajEroare = null;
     res.render('autentificare', { mesajEroare });
 });
 
 
-app.post('/verificare-autentificare', (req, res) => {
+app.post('/verificare-autentificare', async (req, res) => {
     const { username, pass } = req.body;
 
-    if (username === 'aaa' && pass=== 'aaa123'){
-        res.cookie('utilizator', username, {httpOnly: true});
-        res.redirect('http://localhost:6789/');
-    } else {
-        res.cookie('mesajEroare', 'Utilizator sau parolă incorecte', { maxAge: 5000 });
-        res.redirect('http://localhost:6789/autentificare');
+    try {
+        const data = await fs.readFile('utilizatori.json', 'utf-8');
+        const utilizatori = JSON.parse(data);
+        const user = utilizatori.find(u => u.username === username && u.parola === pass);
+
+        if (user) {
+            req.session.utilizator = {
+                username: user.username,
+                nume: user.nume,
+                prenume: user.prenume
+            };
+            res.redirect('/');
+        } else {
+            req.session.mesajEroare = 'Utilizator sau parolă greșite.';
+            res.redirect('/autentificare');
+        }
+    } catch (err) {
+        console.error("Eroare la citirea fișierului utilizatori.json:", err);
+        res.status(500).send('Eroare server.');
     }
-    
-    console.log(req.body);
 });
+
+app.post('/logout', (req, res) => {
+    req.session.destroy(err => {
+        if (err) {
+            return res.status(500).send('Eroare la delogare');
+        }
+        res.redirect('/');
+    });
+});
+
+
 
 app.listen(port, () => console.log(`Serverul rulează la adresa http://localhost:
 :${port}/`));
