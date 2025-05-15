@@ -21,10 +21,12 @@ app.use(bodyParser.json());
 // utilizarea unui algoritm de deep parsing care suportă obiecte în obiecte
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// la accesarea din browser adresei http://localhost:6789/ se va returna textul 'Hello World'
+// la accesarea din browser adresei http://localhost:6789/ se va returna pagina index.ejs
 // proprietățile obiectului Request - req - https://expressjs.com/en/api.html#req
 // proprietățile obiectului Response - res - https://expressjs.com/en/api.html#res
-app.get('/', (req, res) => res.send('Hello World'));
+app.get('/', (req, res) => {
+    res.render('index');
+})
 
 // la accesarea din browser adresei http://localhost:6789/chestionar se va apela funcția specificată
 app.get('/chestionar', async (req, res) => {
@@ -65,7 +67,18 @@ app.post('/rezultat-chestionar', async (req, res) => {
     }
 });
 
+app.get('/autentificare', async (req, res) => {
+    try {
+        res.render('autentificare');
+    } catch(error){
+        res.status(500).send('Eroare la încărcarea formularului de autentificare.');
+    }
+});
 
+app.post('/verificare-autentificare', (req, res) => {
+    console.log(req.body);
+    res.send("Chestionar:" + JSON.stringify(req.body));
+});
 
 app.listen(port, () => console.log(`Serverul rulează la adresa http://localhost:
 :${port}/`));
