@@ -1,9 +1,13 @@
+<% if (mesajEroare) { %>
+    <p style="color:red;"><%= mesajEroare %></p>
+<% } %>
+
 <form action="/verificare-autentificare" method="POST">
-        <label for="username">Utilizator:</label>
-        <input type="text" id="username" name="username"><br>
+    <label for="username">Utilizator:</label>
+    <input type="text" id="username" name="username"><br>
 
-        <label for="pass">Parola:</label>
-        <input type="password" id="pass" name="pass"><br>
+    <label for="pass">Parola:</label>
+    <input type="password" id="pass" name="pass"><br>
 
-        <button type="submit" id="authenticationButton">Autentificare</button>
-    </form>
+    <button type="submit" id="authenticationButton">Autentificare</button>
+</form>
