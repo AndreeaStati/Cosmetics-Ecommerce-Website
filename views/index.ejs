@@ -2,12 +2,48 @@
 
 <% if (utilizator) { %>
     <p>Bine ai venit, <%= utilizator.nume %> <%= utilizator.prenume %>!</p>
+    <form method="POST" action="/logout">
+        <button type="submit">Deconectare</button>
+    </form>
 <% } %>
+
+<hr>
 
 <form method="GET" action="/creare-bd">
     <button type="submit">Creare BD</button>
 </form>
 
 <form method="GET" action="/inserare-bd">
-    <button type="submit">Încarcare BD</button>
+    <button type="submit">Încărcare BD</button>
 </form>
+
+<hr>
+
+<h2>Produse disponibile</h2>
+
+<% if (produse && produse.length > 0) { %>
+    <ul>
+    <% produse.forEach(prod => { %>
+        <li>
+            <strong><%= prod.nume %></strong> - <%= prod.pret %> RON (stoc: <%= prod.stoc %>)
+            <% if (utilizator) { %>
+                <form method="POST" action="/adaugare_cos">
+                    <input type="hidden" name="id" value="<%= prod.id %>">
+                    <button type="submit">Adaugă în coș</button>
+                </form><br>
+            <% } %>
+        </li>
+    <% }) %>
+    </ul>
+<% } else { %>
+    <p>Nu există produse în baza de date.</p>
+<% } %>
+
+<% if (utilizator && session && session.cos && session.cos.length > 0) { %>
+    <h3>Coșul tău:</h3>
+    <ul>
+        <% session.cos.forEach(id => { %>
+            <li>ID produs: <%= id %></li>
+        <% }) %>
+    </ul>
+<% } %>

@@ -50,8 +50,21 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // proprietățile obiectului Response - res - https://expressjs.com/en/api.html#res
 app.get('/', (req, res) => {
     const utilizator = req.session.utilizator;
-    res.render('index');
+    const conn = mysql.createConnection({
+        ...dbConfig,
+        database: 'cumparaturi'
+    });
+
+    conn.query('SELECT * FROM produse', (err, rezultate) => {
+        if (err) {
+            console.error("Eroare la interogare produse:", err);
+            return res.status(500).send("Eroare la încărcare produse");
+        }
+        conn.end();
+        res.render('index', { produse: rezultate, utilizator, session: req.session });
+    });
 });
+
 
 // la accesarea din browser adresei http://localhost:6789/chestionar se va apela funcția specificată
 app.get('/chestionar', async (req, res) => {
@@ -186,6 +199,27 @@ app.get('/inserare-bd', (req, res) => {
         connection.end();
         res.redirect('/');
     });
+});
+
+
+app.post('/adaugare_cos', (req, res) => {
+    const idProdus = parseInt(req.body.id);
+
+    if (!req.session.utilizator) {
+        return res.status(403).send("Trebuie să fii autentificat pentru a adăuga în coș.");
+    }
+
+    if (!req.session.cos) {
+        req.session.cos = [];
+    }
+
+    if (!req.session.cos.includes(idProdus)) {
+        req.session.cos.push(idProdus);
+    }
+
+    console.log("Coșul actual:", req.session.cos);
+
+    res.redirect('/');
 });
 
 
