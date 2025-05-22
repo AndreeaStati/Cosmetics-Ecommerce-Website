@@ -1,3 +1,11 @@
+const mysql = require('mysql');
+const dbConfig = {
+    host:'localhost',
+    user:'root',
+    password:'BazeDeDate1234@',
+    multipleStatements: true
+};
+
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const express = require('express');
@@ -126,6 +134,60 @@ app.post('/logout', (req, res) => {
 });
 
 
+app.get('/creare-bd', (req, res) => {
+    console.log("Ruta /creare-bd a fost accesată");
+    const conn = mysql.createConnection(dbConfig);
 
-app.listen(port, () => console.log(`Serverul rulează la adresa http://localhost:
-:${port}/`));
+    const query = `
+        CREATE DATABASE IF NOT EXISTS cumparaturi;
+        USE cumparaturi;
+         CREATE TABLE IF NOT EXISTS produse (
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            nume VARCHAR(100),
+            pret DECIMAL(10,2),
+            stoc INT
+        );
+    `;
+
+    conn.query(query, (err, results) => {
+        if (err) {
+            console.error("Eroare la creare Baza de Date: ", err.sqlMessage || err);
+            return res.status(500).send("Eroare la creare Baza de Date");
+        }
+        conn.end();
+        res.redirect('/');
+    });
+});
+
+
+app.get('/inserare-bd', (req, res) => {
+    console.log("Ruta /inserare-bd a fost accesată");
+
+    const connection = mysql.createConnection({
+        ...dbConfig,
+        database: 'cumparaturi'
+    });
+
+    const produse = [
+        ['Crema hidratanta', 50.00, 30],
+        ['Sampon regenerant', 25.00, 50],
+        ['Ruj rosu', 40.00, 20],
+        ['Fond de ten', 70.00, 15],
+        ['Demachiant', 35.00, 40]
+    ];
+
+    const query = 'INSERT INTO produse (nume, pret, stoc) VALUES ?';
+
+    connection.query(query, [produse], (err, results) => {
+        if (err) {
+            console.error("Eroare la inserare produse:", err);
+            return res.status(500).send("Eroare la inserare produse");
+        }
+        connection.end();
+        res.redirect('/');
+    });
+});
+
+
+
+app.listen(port, () => console.log(`Serverul rulează la adresa http://localhost::${port}/`));
