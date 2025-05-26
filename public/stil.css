@@ -1,10 +1,10 @@
 body {
     font-family: Arial, sans-serif;
-    background-color: #f5f5f5;
-    color: #333;
+    background-color: #f7f7f7;
+    padding: 20px;
     max-width: 800px;
     margin: 0 auto;
-    padding: 2em;
+    color: #333;
 }
 
 header, footer {
@@ -13,6 +13,14 @@ header, footer {
     background-color: #e6e6e6;
     border-radius: 10px;
     margin-bottom: 2em;
+}
+
+#leftHeader {
+    display: flex;
+    flex-direction: row;
+    gap:20px;
+    justify-content: flex-end;
+    text-align: left;
 }
 
 fieldset {
@@ -31,26 +39,28 @@ label {
     margin: 0.5em 0;
 }
 
+h1, h2, h3 {
+    color: #444;
+}
+
+ul {
+    padding-left: 20px;
+}
+
+li {
+    margin-bottom: 10px;
+}
+
 button {
-    padding: 0.6em 1.2em;
-    font-size: 1em;
-    background-color: #007BFF;
+    background-color: #4CAF50;
     border: none;
     color: white;
-    border-radius: 5px;
+    padding: 6px 12px;
+    margin: 4px 2px;
     cursor: pointer;
-    margin-top: 1em;
+    border-radius: 4px;
 }
 
 button:hover {
     background-color: #0056b3;
-}
-
-
-#leftHeader {
-    display: flex;
-    flex-direction: row;
-    gap:20px;
-    justify-content: flex-end;
-    text-align: left;
 }

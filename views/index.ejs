@@ -1,10 +1,11 @@
-<a href="/autentificare">Autentificare</a>
-
-<% if (utilizator) { %>
+<% if (!utilizator) { %>
+    <a href="/autentificare">Autentificare</a>
+<% } else { %>
     <p>Bine ai venit, <%= utilizator.nume %> <%= utilizator.prenume %>!</p>
     <form method="POST" action="/logout">
         <button type="submit">Deconectare</button>
     </form>
+    <p><a href="/vizualizare-cos">Vezi coșul</a></p>
 <% } %>
 
 <hr>
@@ -47,3 +48,4 @@
         <% }) %>
     </ul>
 <% } %>
+

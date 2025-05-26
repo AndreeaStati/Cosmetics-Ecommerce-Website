@@ -222,6 +222,33 @@ app.post('/adaugare_cos', (req, res) => {
     res.redirect('/');
 });
 
+app.get('/vizualizare-cos', (req, res) => {
+    if (!req.session.utilizator) {
+        return res.status(403).send("Trebuie să fii autentificat pentru a vedea coșul.");
+    }
+
+    const cos = req.session.cos || [];
+
+    if (cos.length === 0) {
+        return res.render('vizualizare-cos', { produse: [] });
+    }
+
+    const conn = mysql.createConnection({
+        ...dbConfig,
+        database: 'cumparaturi'
+    });
+
+    const query = `SELECT * FROM produse WHERE id IN (${cos.map(() => '?').join(',')})`;
+
+    conn.query(query, cos, (err, rezultate) => {
+        if (err) {
+            console.error("Eroare la extragerea produselor din coș:", err);
+            return res.status(500).send("Eroare la afișarea coșului.");
+        }
+        conn.end();
+        res.render('vizualizare-cos', { produse: rezultate });
+    });
+});
 
 
 app.listen(port, () => console.log(`Serverul rulează la adresa http://localhost::${port}/`));

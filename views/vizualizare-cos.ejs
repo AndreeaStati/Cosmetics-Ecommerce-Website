@@ -1,0 +1,15 @@
+<h1>Coșul tău de cumpărături</h1>
+
+<% if (produse && produse.length > 0) { %>
+    <ul>
+    <% produse.forEach(prod => { %>
+        <li>
+            <strong><%= prod.nume %></strong> - <%= prod.pret %> RON (stoc: <%= prod.stoc %>)
+        </li>
+    <% }) %>
+    </ul>
+<% } else { %>
+    <p>Coșul este gol.</p>
+<% } %>
+
+<a href="/">Înapoi la magazin</a>
