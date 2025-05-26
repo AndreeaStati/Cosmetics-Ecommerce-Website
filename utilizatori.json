@@ -1,14 +1,16 @@
 [
     {
         "username": "admin",
-        "parola": "parola123",
+        "parola": "admin123",
         "nume": "Popescu",
-        "prenume": "Ion"
+        "prenume": "Ion",
+        "rol": "ADMIN"
     },
     {
-        "username": "ana",
-        "parola": "ana2024",
+        "username": "user",
+        "parola": "user123",
         "nume": "Ionescu",
-        "prenume": "Ana"
+        "prenume": "Ana",
+        "rol": "USER"
     }
 ]

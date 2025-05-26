@@ -124,7 +124,8 @@ app.post('/verificare-autentificare', async (req, res) => {
             req.session.utilizator = {
                 username: user.username,
                 nume: user.nume,
-                prenume: user.prenume
+                prenume: user.prenume,
+                rol: user.rol // adăugat
             };
             res.redirect('/');
         } else {
@@ -182,11 +183,11 @@ app.get('/inserare-bd', (req, res) => {
     });
 
     const produse = [
-        ['Crema hidratanta', 50.00, 30],
-        ['Sampon regenerant', 25.00, 50],
-        ['Ruj rosu', 40.00, 20],
-        ['Fond de ten', 70.00, 15],
-        ['Demachiant', 35.00, 40]
+        ['Isntree, Crema hidratanta cu acid hialuronic', 57.00, 30],
+        ['K18, Sampon detoxifiant', 142.00, 43],
+        ['NYX, Creion de buze Mauve  ', 30.00, 20],
+        ['Catrice, Fond de ten', 45.00, 15],
+        ['Garnier, Apa micelara pentru ten sensibil', 33.00, 40]
     ];
 
     const query = 'INSERT INTO produse (nume, pret, stoc) VALUES ?';
@@ -247,6 +248,41 @@ app.get('/vizualizare-cos', (req, res) => {
         }
         conn.end();
         res.render('vizualizare-cos', { produse: rezultate });
+    });
+});
+
+app.get('/admin', (req, res) => {
+    const utilizator = req.session.utilizator;
+
+    if (!utilizator || utilizator.rol !== 'ADMIN') {
+        return res.status(403).send("Acces interzis. Această pagină este doar pentru administratori.");
+    }
+
+    res.render('admin');
+});
+
+app.post('/admin/adauga-produs', (req, res) => {
+    const utilizator = req.session.utilizator;
+
+    if (!utilizator || utilizator.rol !== 'ADMIN') {
+        return res.status(403).send("Acces interzis.");
+    }
+
+    const { nume, pret, stoc } = req.body;
+    const conn = mysql.createConnection({
+        ...dbConfig,
+        database: 'cumparaturi'
+    });
+
+    const query = 'INSERT INTO produse (nume, pret, stoc) VALUES (?, ?, ?)';
+
+    conn.query(query, [nume, pret, stoc], (err, result) => {
+        if (err) {
+            console.error("Eroare la adăugarea produsului:", err);
+            return res.status(500).send("Eroare la adăugare produs.");
+        }
+        conn.end();
+        res.redirect('/');
     });
 });
 

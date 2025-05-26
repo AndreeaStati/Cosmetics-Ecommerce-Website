@@ -8,6 +8,11 @@
     <p><a href="/vizualizare-cos">Vezi coșul</a></p>
 <% } %>
 
+<% if (utilizator && utilizator.rol === 'ADMIN') { %>
+    <p><a href="/admin">Panou Admin</a></p>
+<% } %>
+
+
 <hr>
 
 <form method="GET" action="/creare-bd">
