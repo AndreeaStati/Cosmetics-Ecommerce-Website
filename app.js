@@ -16,6 +16,24 @@ const fs = require('fs/promises');
 const app = express(); // <-- aceasta trebuie să fie aici sus, înainte de orice "app.use()"
 
 app.use(cookieParser());
+
+const ipAttempts = {}; 
+
+const BLOCK_THRESHOLD = 3; // nr incercari gresite permise
+const BLOCK_DURATION = 5 * 60 * 1000; // 5 min in ms
+
+app.use((req, res, next) => {
+    const ip = req.ip;
+
+    const info = ipAttempts[ip];
+    if (info && info.blockedUntil && Date.now() < info.blockedUntil) {
+        return res.status(403).send("Acces blocat temporar din cauza mai multor accesări greșite.");
+    }
+
+    next();
+});
+
+
 app.use(session({
     secret: 'secretSession',
     resave: false,
@@ -50,6 +68,12 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // proprietățile obiectului Response - res - https://expressjs.com/en/api.html#res
 app.get('/', (req, res) => {
     const utilizator = req.session.utilizator;
+    const ip = req.ip;
+
+    if (ipAttempts[ip]) {
+        delete ipAttempts[ip];
+    }
+
     const conn = mysql.createConnection({
         ...dbConfig,
         database: 'cumparaturi'
@@ -284,6 +308,23 @@ app.post('/admin/adauga-produs', (req, res) => {
         conn.end();
         res.redirect('/');
     });
+});
+
+app.use((req, res, next) => {
+    const ip = req.ip;
+
+    if (!ipAttempts[ip]) {
+        ipAttempts[ip] = { count: 1 };
+    } else {
+        ipAttempts[ip].count++;
+    }
+
+    if (ipAttempts[ip].count >= BLOCK_THRESHOLD) {
+        ipAttempts[ip].blockedUntil = Date.now() + BLOCK_DURATION;
+        console.warn(`IP ${ip} a fost blocat temporar pentru ${BLOCK_DURATION / 60000} minute.`);
+    }
+
+    res.status(404).send("Resursa nu există.");
 });
 
 
