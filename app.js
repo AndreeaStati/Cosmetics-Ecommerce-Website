@@ -80,13 +80,16 @@ app.get('/', (req, res) => {
     });
 
     conn.query('SELECT * FROM produse', (err, rezultate) => {
-        if (err) {
-            console.error("Eroare la interogare produse:", err);
-            return res.status(500).send("Eroare la încărcare produse");
-        }
+    if (err) {
+        console.warn("Tabela produse nu există încă sau altă eroare:", err.sqlMessage || err);
         conn.end();
-        res.render('index', { produse: rezultate, utilizator, session: req.session });
-    });
+        // Trimite pagina index fără produse
+        return res.render('index', { produse: [], utilizator, session: req.session });
+    }
+    conn.end();
+    res.render('index', { produse: rezultate, utilizator, session: req.session });
+});
+
 });
 
 
@@ -181,9 +184,11 @@ app.get('/creare-bd', (req, res) => {
         USE cumparaturi;
          CREATE TABLE IF NOT EXISTS produse (
             id INT PRIMARY KEY AUTO_INCREMENT,
-            nume VARCHAR(100),
+            categorie VARCHAR(50),
+            nume VARCHAR(150),
             pret DECIMAL(10,2),
-            stoc INT
+            stoc INT,
+            imagine VARCHAR(255)
         );
     `;
 
@@ -207,14 +212,29 @@ app.get('/inserare-bd', (req, res) => {
     });
 
     const produse = [
-        ['Isntree, Crema hidratanta cu acid hialuronic', 57.00, 30],
-        ['K18, Sampon detoxifiant', 142.00, 43],
-        ['NYX, Creion de buze Mauve  ', 30.00, 20],
-        ['Catrice, Fond de ten', 45.00, 15],
-        ['Garnier, Apa micelara pentru ten sensibil', 33.00, 40]
+        ['skincare', 'Garnier, Apa micelara pentru ten sensibil, 700ml', 33.89, 40, 'garnier.jpg'],
+        ['skincare', 'Anua, Spuma de curatare cu extract de heartleaf și quercetinol, 150 ml', 57.36, 19, 'anua.png'],
+        ['skincare', 'Skin1004 Madagascar, Toner exfoliant delicat pentru piele sensibilă, 210 ml', 83.00, 22, 'skin1004.png'],
+        ['skincare', 'Beauty of Joseon, Ser pentru stralucire cu Propolis si Niacinamide', 73.47, 64, 'ser.png'],
+        ['skincare', 'Purito, Crema de fata cu Pantenol si extract de Bambus Coreean, 100 ml', 78.75, 29, 'purito.jpg'],
+        ['skincare', 'Isntree, Crema hidratanta cu acid hialuronic', 57.00, 30, 'isntree.png'],
+
+        ['haircare', 'K18, Sampon detoxifiant', 142.00, 43, 'k18.png'],
+        ['haircare', 'Redken, Balsam intens revitalizant, fortifiant si optimizat pentru par colorat, 300 ml', 108.00, 38, 'redken.png'],
+        ['haicare', 'Moroccanoil, Masca intens hidratanta, 250 ml', 225.00, 27, 'moroccanoil.jpg'],
+        ['haircare', 'Gisou, Ulei de par infuzat cu miere, 20 ml', 110.00, 47, 'gisou.png'],
+       
+        ['makeup', 'Catrice, Fond de ten', 45.00, 15, 'catrice.png'],
+        ['makeup', 'NYX, Concealer', 55.54, 70, 'concealer.png'],
+        ['makeup', 'Rare Beauty, Blush Lichid, 7.5 ml', 147.00, 25, 'blush.png'],
+        ['makeup', 'Rare Beauty, Contur Lichid, 14.88 ml', 165.00, 34, 'bronzer.png'],
+        ['makeup', 'Huda Beauty, Pudra libera de fixare', 209.00, 15, 'pudra.png'],
+        ['makeup', 'NYX, Creion de buze Mauve  ', 30.00, 20, 'nyx.jpg'],
+        ['makeup', 'Anastasia Beverly Hills, Ruj de buze, 3.5g', 148.00, 22, 'ruj.png'],
+        ['makeup', 'Maybelline, Mascara Lash Sensational', 39.48, 50, 'maybelline.png']
     ];
 
-    const query = 'INSERT INTO produse (nume, pret, stoc) VALUES ?';
+    const query = 'INSERT INTO produse (categorie, nume, pret, stoc, imagine) VALUES ?';
 
     connection.query(query, [produse], (err, results) => {
         if (err) {
@@ -226,26 +246,56 @@ app.get('/inserare-bd', (req, res) => {
     });
 });
 
-
 app.post('/adaugare_cos', (req, res) => {
     const idProdus = parseInt(req.body.id);
+    const cantitate = parseInt(req.body.cantitate || '1');
 
     if (!req.session.utilizator) {
         return res.status(403).send("Trebuie să fii autentificat pentru a adăuga în coș.");
     }
 
     if (!req.session.cos) {
-        req.session.cos = [];
+        req.session.cos = []; // fiecare element va fi de forma { id: X, cantitate: Y }
     }
 
-    if (!req.session.cos.includes(idProdus)) {
-        req.session.cos.push(idProdus);
-    }
+    const conn = mysql.createConnection({
+        ...dbConfig,
+        database: 'cumparaturi'
+    });
 
-    console.log("Coșul actual:", req.session.cos);
+    conn.query('SELECT * FROM produse WHERE id = ?', [idProdus], (err, rezultate) => {
+        if (err) {
+            console.error("Eroare la interogarea bazei de date:", err);
+            conn.end();
+            return res.status(500).send("Eroare la adăugarea produsului.");
+        }
 
-    res.redirect('/');
+        if (rezultate.length === 0) {
+            conn.end();
+            return res.status(404).send("Produsul nu există.");
+        }
+
+        const produs = rezultate[0];
+
+        if (cantitate < 1 || cantitate > produs.stoc) {
+            conn.end();
+            return res.status(400).send(`Cantitatea trebuie să fie între 1 și ${produs.stoc}.`);
+        }
+
+        // Verificăm dacă produsul e deja în coș
+        const index = req.session.cos.findIndex(p => p.id === idProdus);
+        if (index !== -1) {
+            req.session.cos[index].cantitate += cantitate;
+        } else {
+            req.session.cos.push({ id: idProdus, cantitate });
+        }
+
+        conn.end();
+        console.log("Coș actualizat:", req.session.cos);
+        res.redirect('/');
+    });
 });
+
 
 app.get('/vizualizare-cos', (req, res) => {
     if (!req.session.utilizator) {
@@ -292,16 +342,22 @@ app.post('/admin/adauga-produs', (req, res) => {
         return res.status(403).send("Acces interzis.");
     }
 
-    const { nume, pret, stoc } = req.body;
+    const { categorie, nume, pret, stoc, imagine } = req.body;
     const conn = mysql.createConnection({
         ...dbConfig,
         database: 'cumparaturi'
     });
 
-    const query = 'INSERT INTO produse (nume, pret, stoc) VALUES (?, ?, ?)';
+    const query = 'INSERT INTO produse (categorie, nume, pret, stoc, imagine) VALUES (?, ?, ?, ?, ?)';
 
-    conn.query(query, [nume, pret, stoc], (err, result) => {
-        if (err) {
+    const pretNumar = parseFloat(pret);
+    const stocNumar = parseInt(stoc);
+    const categoriiPermise = ['skincare', 'makeup', 'haircare'];
+    if (!categoriiPermise.includes(categorie)) {
+        return res.status(400).send("Categorie invalidă.");
+    }
+
+    conn.query(query, [categorie, nume.trim(), pretNumar, stocNumar, imagine || null], (err, result) => {        if (err) {
             console.error("Eroare la adăugarea produsului:", err);
             return res.status(500).send("Eroare la adăugare produs.");
         }
@@ -328,4 +384,4 @@ app.use((req, res, next) => {
 });
 
 
-app.listen(port, () => console.log(`Serverul rulează la adresa http://localhost::${port}/`));
+app.listen(port, () => console.log(`Serverul rulează la adresa http://localhost:${port}/`));

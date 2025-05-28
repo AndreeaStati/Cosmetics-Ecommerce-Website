@@ -1,56 +1,101 @@
-<% if (!utilizator) { %>
-    <a href="/autentificare">Autentificare</a>
-<% } else { %>
-    <p>Bine ai venit, <%= utilizator.nume %> <%= utilizator.prenume %>!</p>
-    <form method="POST" action="/logout">
-        <button type="submit">Deconectare</button>
-    </form>
-    <p><a href="/vizualizare-cos">Vezi coșul</a></p>
+<div class="navbar">
+    <a href="/chestionar">Chestionar</a>
+
+    <% if (!utilizator) { %>
+        <a href="/autentificare">Autentificare</a>
+    <% } else { %>
+        <a href="/vizualizare-cos">Vezi coșul</a>
+
+        <% if (utilizator.rol === 'ADMIN') { %>
+            <a href="/admin">Panou Admin</a>
+        <% } %>
+    <% } %>
+        
+    <a href="/creare-bd">Creare BD</a>
+    <a href="/inserare-bd">Încărcare BD</a>
+
+</div><br>
+
+<% if (utilizator) { %>
+    <div class="header-user">
+        <p>Logat ca <%= utilizator.prenume %> <%= utilizator.nume %></p>
+        <form method="POST" action="/logout">
+            <button type="submit">Delogare</button>
+        </form>
+    </div>
 <% } %>
 
-<% if (utilizator && utilizator.rol === 'ADMIN') { %>
-    <p><a href="/admin">Panou Admin</a></p>
-<% } %>
+<div id="products-category">
+    <div id="products-category-text">
+        <h3>Bine ai venit în locul unde frumusețea începe cu tine!</h3>
+        <p>
+            Explorează o lume dedicată îngrijirii personale - de la skincare delicat,
+            la produse profesionale de haircare și makeup care te pun în valoare.<br />
+            Tot ce iubești, într-un singur loc. <br />
+            Adaugă în coș preferatele tale și începe-ți ritualul de frumusețe chiar azi!
+        </p>
+    </div>
 
-
-<hr>
-
-<form method="GET" action="/creare-bd">
-    <button type="submit">Creare BD</button>
-</form>
-
-<form method="GET" action="/inserare-bd">
-    <button type="submit">Încărcare BD</button>
-</form>
-
-<hr>
+    <div class="products-category-img">
+        <a href="#haircare-section" class="products-category-link">
+            <img src="images/haircare.jpeg" alt="haircare" width="283" height="400" class="products-category-image" />
+        </a>
+        <a href="#skincare-section" class="products-category-link">
+            <img src="images/skincare.jpeg" alt="skincare" width="267" height="400" class="products-category-image" />
+        </a>
+        <a href="#makeup-section" class="products-category-link">
+            <img src="images/makeup.jpeg" alt="makeup" width="400" height="400" class="products-category-image" />
+        </a>
+    </div>
+</div>
 
 <h2>Produse disponibile</h2>
+<div id="products">
 
-<% if (produse && produse.length > 0) { %>
-    <ul>
-    <% produse.forEach(prod => { %>
-        <li>
-            <strong><%= prod.nume %></strong> - <%= prod.pret %> RON (stoc: <%= prod.stoc %>)
-            <% if (utilizator) { %>
-                <form method="POST" action="/adaugare_cos">
-                    <input type="hidden" name="id" value="<%= prod.id %>">
-                    <button type="submit">Adaugă în coș</button>
-                </form><br>
-            <% } %>
-        </li>
-    <% }) %>
-    </ul>
-<% } else { %>
-    <p>Nu există produse în baza de date.</p>
-<% } %>
+    <% if (produse && produse.length > 0) { 
+        const categorii = ["skincare", "makeup", "haircare"];
+        const descriptions = {
+            skincare: "Răsfață-ți pielea cu cele mai fine produse de skincare. Găsește creme, seruri și loțiuni care îți vor transforma rutina zilnică.",
+            makeup: "Evidențiază-ți frumusețea naturală cu o gamă variată de produse de makeup - de la fonduri de ten, la rujuri și farduri spectaculoase.",
+            haircare: "Oferă părului tău îngrijirea pe care o merită. Șampoane, balsamuri și tratamente profesionale pentru un păr strălucitor și sănătos."
+        };
+
+        categorii.forEach(categorie => { %>
+
+        <h2 id="<%= categorie %>-section" class="categorie-text">
+            <%= categorie.charAt(0).toUpperCase() + categorie.slice(1) %>
+        </h2>
+        <p class="categorie-text"><%= descriptions[categorie] %></p> 
+
+        <div class="sectiune-produse">
+            <% produse.filter(p => p.categorie === categorie).forEach(prod => { %>
+                <div class="card-produs">
+                    <strong><%= prod.nume %></strong><br />
+                    <span><%= prod.pret %> RON (stoc: <%= prod.stoc %>)</span><br />
+                    <% if (prod.imagine) { %>
+                        <img src="/images/<%= prod.imagine %>" alt="<%= prod.nume %>" width="150" /><br />
+                    <% } %>
+
+                    <% if (utilizator) { %>
+                        <form method="POST" action="/adaugare_cos">
+                            <input type="hidden" name="id" value="<%= prod.id %>" />
+                            <label for="cantitate_<%= prod.id %>">Cantitate:</label>
+                            <input type="number" name="cantitate" id="cantitate_<%= prod.id %>" value="1" min="1" max="<%= prod.stoc %>" required />
+                            <button type="submit">Adaugă în coș</button>
+                        </form>
+                    <% } %>
+                </div>
+            <% }); %>
+        </div>
+
+    <% }); } %>
+</div>
 
 <% if (utilizator && session && session.cos && session.cos.length > 0) { %>
     <h3>Coșul tău:</h3>
     <ul>
         <% session.cos.forEach(id => { %>
             <li>ID produs: <%= id %></li>
-        <% }) %>
+        <% }); %>
     </ul>
 <% } %>
-

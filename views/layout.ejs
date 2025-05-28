@@ -8,17 +8,19 @@
 </head>
 
 <body>
+
     <header>
-        <h1>Cosmetice</h1>
-        <% if (utilizator) { %>
-            <section id = leftHeader>
-                <p>Logat ca <%= utilizator.prenume %> <%= utilizator.nume %></p>
-                <form method="POST" action="/logout">
-                    <button type="submit">Delogare</button>
-                </form>
-            </section>
-            
-        <% } %>
+        <div class="header-content">
+            <div class="header-section">
+                <h1>Cosmetice</h1>
+                <h4>Din grija pentru tenul tau...</h4>
+            </div>
+
+            <div class="header-section">
+                <img src="images/header-img.jpeg" alt="skincare" width="225" height="400">
+            </div>
+        </div><br>
+
     </header>
 
     <main>

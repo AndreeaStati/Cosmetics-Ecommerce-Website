@@ -1,6 +1,13 @@
 <h2>Panou Admin - Adaugă produs</h2>
 
 <form method="POST" action="/admin/adauga-produs">
+    <label for="categorie">Categorie:</label>
+    <select name="categorie" required>
+        <option value="skincare">Skincare</option>
+        <option value="makeup">Makeup</option>
+        <option value="haircare">Haircare</option>
+    </select><br>
+
     <label for="nume">Nume:</label>
     <input type="text" name="nume" required><br>
 
@@ -9,6 +16,9 @@
 
     <label for="stoc">Stoc:</label>
     <input type="number" name="stoc" required><br>
+
+    <label for="imagine">Nume fișier imagine (ex: produs.jpg/png/jpeg):</label>
+    <input type="text" name="imagine"><br>
 
     <button type="submit">Adaugă produs</button>
 </form>
