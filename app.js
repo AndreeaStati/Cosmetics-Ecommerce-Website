@@ -83,7 +83,8 @@ app.get('/', (req, res) => {
     if (err) {
         console.warn("Tabela produse nu există încă sau altă eroare:", err.sqlMessage || err);
         conn.end();
-        // Trimite pagina index fără produse
+        
+        // Trimite pagina index fara produse
         return res.render('index', { produse: [], utilizator, session: req.session });
     }
     conn.end();
@@ -221,7 +222,7 @@ app.get('/inserare-bd', (req, res) => {
 
         ['haircare', 'K18, Sampon detoxifiant', 142.00, 43, 'k18.png'],
         ['haircare', 'Redken, Balsam intens revitalizant, fortifiant si optimizat pentru par colorat, 300 ml', 108.00, 38, 'redken.png'],
-        ['haicare', 'Moroccanoil, Masca intens hidratanta, 250 ml', 225.00, 27, 'moroccanoil.jpg'],
+        ['haircare', 'Moroccanoil, Masca intens hidratanta, 250 ml', 225.00, 27, 'moroccanoil.jpg'],
         ['haircare', 'Gisou, Ulei de par infuzat cu miere, 20 ml', 110.00, 47, 'gisou.png'],
        
         ['makeup', 'Catrice, Fond de ten', 45.00, 15, 'catrice.png'],
@@ -246,16 +247,17 @@ app.get('/inserare-bd', (req, res) => {
     });
 });
 
+
 app.post('/adaugare_cos', (req, res) => {
     const idProdus = parseInt(req.body.id);
-    const cantitate = parseInt(req.body.cantitate || '1');
+    const cantitateSolicitata = parseInt(req.body.cantitate || '1');
 
     if (!req.session.utilizator) {
         return res.status(403).send("Trebuie să fii autentificat pentru a adăuga în coș.");
     }
 
     if (!req.session.cos) {
-        req.session.cos = []; // fiecare element va fi de forma { id: X, cantitate: Y }
+        req.session.cos = [];
     }
 
     const conn = mysql.createConnection({
@@ -264,35 +266,40 @@ app.post('/adaugare_cos', (req, res) => {
     });
 
     conn.query('SELECT * FROM produse WHERE id = ?', [idProdus], (err, rezultate) => {
-        if (err) {
-            console.error("Eroare la interogarea bazei de date:", err);
+        if (err || rezultate.length === 0) {
             conn.end();
-            return res.status(500).send("Eroare la adăugarea produsului.");
-        }
-
-        if (rezultate.length === 0) {
-            conn.end();
-            return res.status(404).send("Produsul nu există.");
+            return res.status(500).send("Produsul nu există sau eroare la interogare.");
         }
 
         const produs = rezultate[0];
-
-        if (cantitate < 1 || cantitate > produs.stoc) {
-            conn.end();
-            return res.status(400).send(`Cantitatea trebuie să fie între 1 și ${produs.stoc}.`);
-        }
-
-        // Verificăm dacă produsul e deja în coș
         const index = req.session.cos.findIndex(p => p.id === idProdus);
-        if (index !== -1) {
-            req.session.cos[index].cantitate += cantitate;
-        } else {
-            req.session.cos.push({ id: idProdus, cantitate });
+        const cantitateInCos = index !== -1 ? req.session.cos[index].cantitate : 0;
+        const totalCantitate = cantitateInCos + cantitateSolicitata;
+
+        if (cantitateSolicitata < 1 || totalCantitate > produs.stoc) {
+            conn.end();
+            return res.status(400).send(`Poți adăuga cel mult ${produs.stoc - cantitateInCos} unități.`);
         }
 
-        conn.end();
-        console.log("Coș actualizat:", req.session.cos);
-        res.redirect('/');
+        // Actualizează coșul în sesiune
+        if (index !== -1) {
+            req.session.cos[index].cantitate = totalCantitate;
+        } else {
+            req.session.cos.push({ id: idProdus, cantitate: cantitateSolicitata });
+        }
+
+        // Scade stocul în baza de date
+        const stocNou = produs.stoc - cantitateSolicitata;
+        conn.query('UPDATE produse SET stoc = ? WHERE id = ?', [stocNou, idProdus], (updateErr) => {
+            conn.end();
+            if (updateErr) {
+                console.error("Eroare la actualizarea stocului:", updateErr);
+                return res.status(500).send("Eroare la actualizarea stocului.");
+            }
+
+            console.log(`Stoc actualizat pentru produsul ${idProdus}: ${stocNou} unități rămase.`);
+            res.redirect('/');
+        });
     });
 });
 
@@ -305,7 +312,7 @@ app.get('/vizualizare-cos', (req, res) => {
     const cos = req.session.cos || [];
 
     if (cos.length === 0) {
-        return res.render('vizualizare-cos', { produse: [] });
+        return res.render('vizualizare-cos', { produse: [], cantitati: {} });
     }
 
     const conn = mysql.createConnection({
@@ -313,17 +320,27 @@ app.get('/vizualizare-cos', (req, res) => {
         database: 'cumparaturi'
     });
 
-    const query = `SELECT * FROM produse WHERE id IN (${cos.map(() => '?').join(',')})`;
+    const ids = cos.map(p => p.id);
+    const placeholders = ids.map(() => '?').join(',');
+    const query = `SELECT * FROM produse WHERE id IN (${placeholders})`;
 
-    conn.query(query, cos, (err, rezultate) => {
+    conn.query(query, ids, (err, rezultate) => {
+        conn.end();
+
         if (err) {
             console.error("Eroare la extragerea produselor din coș:", err);
             return res.status(500).send("Eroare la afișarea coșului.");
         }
-        conn.end();
-        res.render('vizualizare-cos', { produse: rezultate });
+
+        const cantitatiMap = Object.fromEntries(cos.map(p => [p.id, p.cantitate]));
+
+        res.render('vizualizare-cos', {
+            produse: rezultate,
+            cantitati: cantitatiMap
+        });
     });
 });
+
 
 app.get('/admin', (req, res) => {
     const utilizator = req.session.utilizator;
@@ -353,6 +370,7 @@ app.post('/admin/adauga-produs', (req, res) => {
     const pretNumar = parseFloat(pret);
     const stocNumar = parseInt(stoc);
     const categoriiPermise = ['skincare', 'makeup', 'haircare'];
+
     if (!categoriiPermise.includes(categorie)) {
         return res.status(400).send("Categorie invalidă.");
     }
@@ -385,3 +403,8 @@ app.use((req, res, next) => {
 
 
 app.listen(port, () => console.log(`Serverul rulează la adresa http://localhost:${port}/`));
+
+/* prevenire sql injection
+    - interogari parametrizate (conn.query('SELECT * FROM produse WHERE id = ?', [idProdus]))
+    - validare date de intrare
+*/

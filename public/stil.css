@@ -268,3 +268,127 @@ body > header > div.header-content > div:nth-child(1) > h1 {
 .card-produs button:hover {
     background-color: #2e382d;
 }
+
+
+/* ==== Stiluri pentru pagina coșului ==== */
+
+.cos-container {
+    max-width: 800px;
+    margin: auto;
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.cos-container h1 {
+    text-align: center;
+    color: #444;
+    margin-bottom: 30px;
+}
+
+.cos-container ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.cos-container li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding: 15px 0;
+    font-size: 16px;
+}
+
+.cos-container li:last-child {
+    border-bottom: none;
+}
+
+.cos-container .produs-nume {
+    font-weight: bold;
+    color: #333;
+}
+
+.cos-container .pret-detalii {
+    color: #555;
+}
+
+.total-general {
+    text-align: right;
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 20px;
+    color: #000;
+}
+
+.empty {
+    text-align: center;
+    font-style: italic;
+    color: #999;
+    margin: 40px 0;
+}
+
+.buton-inapoi {
+    display: inline-block;
+    margin-top: 30px;
+    text-decoration: none;
+    color: white;
+    background-color: #5a67d8;
+    padding: 10px 20px;
+    border-radius: 8px;
+    transition: background 0.3s;
+}
+
+.buton-inapoi:hover {
+    background-color: #434190;
+}
+
+.quiz-form {
+    max-width: 800px;
+    margin: auto;
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+}
+
+.question {
+    margin-bottom: 2rem;
+    border: none;
+}
+
+.question legend {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #2c3e50;
+}
+
+.option {
+    display: block;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.option input[type="radio"] {
+    margin-right: 0.5rem;
+}
+
+.submit-button {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.submit-button:hover {
+    background-color: #2980b9;
+}

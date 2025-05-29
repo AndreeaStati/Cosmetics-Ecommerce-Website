@@ -48,5 +48,60 @@
         "intrebare": "Ce este “clean beauty”?",
         "variante": ["Machiaj rezistent la apă", "Produse testate clinic", "Produse fără ingrediente controversate", "Produse ieftine"],
         "corect": 2
+    },
+
+    {
+    "intrebare": "Ce tip de șampon este recomandat pentru părul gras?",
+    "variante": ["Șampon hidratant", "Șampon uscat", "Șampon clarifiant", "Șampon pentru volum"],
+    "corect": 2
+    },
+
+    {
+        "intrebare": "Ce ingredient este benefic pentru repararea părului deteriorat?",
+        "variante": ["Sulfat", "Silicon", "Keratină", "Alcool"],
+        "corect": 2
+    },
+    {
+        "intrebare": "Cât de des este recomandat să te speli pe cap cu un șampon clarifiant?",
+        "variante": ["Zilnic", "O dată pe săptămână", "La fiecare spălare", "Niciodată"],
+        "corect": 1
+    },
+    {
+        "intrebare": "Ce înseamnă termenul “sulfate-free” pe eticheta unui șampon?",
+        "variante": ["Conține sulfați naturali", "Nu conține sulfați agresivi", "Este un produs 100% organic", "Este pentru păr vopsit"],
+        "corect": 1
+    },
+    {
+        "intrebare": "De ce este recomandat să folosești balsam după șamponare?",
+        "variante": ["Pentru volum", "Pentru culoare", "Pentru hidratare și descurcare", "Pentru a reduce sebumul"],
+        "corect": 2
+    },
+
+    {
+    "intrebare": "Ce produs se aplică înaintea fondului de ten pentru a pregăti pielea?",
+    "variante": ["Primer", "Blush", "Pudră", "Concealer"],
+    "corect": 0
+    },
+    {
+        "intrebare": "Ce este concealer-ul folosit pentru?",
+        "variante": ["Pentru a evidenția sprâncenele", "Pentru acoperirea imperfecțiunilor", "Pentru a fixa machiajul", "Pentru conturare"],
+        "corect": 1
+    },
+    {
+        "intrebare": "Ce tip de pensulă se folosește pentru aplicarea fardului de obraz?",
+        "variante": ["Pensulă plată", "Pensulă de blending", "Pensulă unghiulară", "Pensulă pentru eyeliner"],
+        "corect": 2
+    },
+    {
+        "intrebare": "Ce produs ajută la fixarea machiajului pe termen lung?",
+        "variante": ["Primer", "Fond de ten", "Spray de fixare", "Corector"],
+        "corect": 2
+    },
+    {
+        "intrebare": "Ce tip de ruj are cea mai lungă rezistență?",
+        "variante": ["Luciu de buze", "Ruj hidratant", "Ruj lichid mat", "Balsam colorat"],
+        "corect": 2
     }
+
+
 ]

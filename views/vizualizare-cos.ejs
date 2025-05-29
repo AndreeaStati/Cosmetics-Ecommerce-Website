@@ -1,15 +1,28 @@
-<h1>Coșul tău de cumpărături</h1>
+<div class="cos-container">
+    <h1>Coșul tău de cumpărături</h1>
 
-<% if (produse && produse.length > 0) { %>
-    <ul>
-    <% produse.forEach(prod => { %>
-        <li>
-            <strong><%= prod.nume %></strong> - <%= prod.pret %> RON (stoc: <%= prod.stoc %>)
-        </li>
-    <% }) %>
-    </ul>
-<% } else { %>
-    <p>Coșul este gol.</p>
-<% } %>
+    <% if (produse && produse.length > 0) { %>
+        <ul>
+        <% 
+            let totalGeneral = 0;
+            produse.forEach(prod => { 
+                const cantitate = cantitati[prod.id] || 0;
+                const totalProdus = cantitate * prod.pret;
+                totalGeneral += totalProdus;
+        %>
+            <li>
+                <span class="produs-nume"><%= prod.nume %></span>
+                <span class="pret-detalii">
+                    <%= prod.pret.toFixed(2) %> RON x <%= cantitate %> = 
+                    <strong><%= totalProdus.toFixed(2) %> RON</strong>
+                </span>
+            </li>
+        <% }) %>
+        </ul>
+        <p class="total-general">Total general: <%= totalGeneral.toFixed(2) %> RON</p>
+    <% } else { %>
+        <p class="empty">Coșul este gol.</p>
+    <% } %>
 
-<a href="/">Înapoi la magazin</a>
+    <a class="buton-inapoi" href="/">← Înapoi la magazin</a>
+</div>

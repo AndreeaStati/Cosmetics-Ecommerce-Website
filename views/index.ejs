@@ -55,7 +55,7 @@
     <% if (produse && produse.length > 0) { 
         const categorii = ["skincare", "makeup", "haircare"];
         const descriptions = {
-            skincare: "Răsfață-ți pielea cu cele mai fine produse de skincare. Găsește creme, seruri și loțiuni care îți vor transforma rutina zilnică.",
+            skincare: "Răsfață-ți pielea cu cele mai fine produse de îngrijire a tenului. Găsește creme, seruri și loțiuni care îți vor transforma rutina zilnică.",
             makeup: "Evidențiază-ți frumusețea naturală cu o gamă variată de produse de makeup - de la fonduri de ten, la rujuri și farduri spectaculoase.",
             haircare: "Oferă părului tău îngrijirea pe care o merită. Șampoane, balsamuri și tratamente profesionale pentru un păr strălucitor și sănătos."
         };
@@ -77,12 +77,16 @@
                     <% } %>
 
                     <% if (utilizator) { %>
-                        <form method="POST" action="/adaugare_cos">
-                            <input type="hidden" name="id" value="<%= prod.id %>" />
-                            <label for="cantitate_<%= prod.id %>">Cantitate:</label>
-                            <input type="number" name="cantitate" id="cantitate_<%= prod.id %>" value="1" min="1" max="<%= prod.stoc %>" required />
-                            <button type="submit">Adaugă în coș</button>
-                        </form>
+                        <% if (prod.stoc > 0) { %>
+                            <form method="POST" action="/adaugare_cos">
+                                <input type="hidden" name="id" value="<%= prod.id %>" />
+                                <label for="cantitate_<%= prod.id %>">Cantitate:</label>
+                                <input type="number" name="cantitate" id="cantitate_<%= prod.id %>" value="1" min="1" max="<%= prod.stoc %>" required />
+                                <button type="submit">Adaugă în coș</button>
+                            </form>
+                        <% } else { %>
+                            <p style="color:red;">Stoc epuizat</p>
+                        <% } %>
                     <% } %>
                 </div>
             <% }); %>
@@ -93,9 +97,9 @@
 
 <% if (utilizator && session && session.cos && session.cos.length > 0) { %>
     <h3>Coșul tău:</h3>
-    <ul>
-        <% session.cos.forEach(id => { %>
-            <li>ID produs: <%= id %></li>
-        <% }); %>
-    </ul>
+    <% session.cos.forEach(p => { %>
+    <p>ID produs: <%= p.id %>, Cantitate: <%= p.cantitate %></p>
+    <% }) %>
+<% } else { %>
+    <p>Coșul este gol.</p>
 <% } %>
