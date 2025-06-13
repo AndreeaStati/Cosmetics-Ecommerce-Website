@@ -19,7 +19,7 @@ Proiectul simulează o aplicație web de tip e-commerce unde utilizatorii pot:
 - Cookie-parser
 - Express-session
 - MySQL
-- HTML/CSS
+- HTML/CSS/JavaScript
 
 
 ## 🔑 Funcționalități
